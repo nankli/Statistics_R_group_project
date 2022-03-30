@@ -47,6 +47,9 @@ root_path <- dirname(notebooks_path)
 ```{r load parquet file, include=FALSE}
 post_2000_raw <- read_parquet(file = file.path(root_path, "post_2000_data"))
 
+```
+
+```{r inital data cleaning , include=FALSE}
 #count total obs (3356 obs)
 ttl_count <- nrow(post_2000_raw)
 
@@ -72,12 +75,6 @@ post_2000_raw <- post_2000_raw %>%
   )
 
 browse_data <- post_2000_raw[1:50,]
-```
-
-```{r inital data cleaning , include=FALSE}
-
-
-
 
 ```
 
