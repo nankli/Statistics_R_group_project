@@ -12,6 +12,7 @@ library(knitr)
 library(patchwork)
 library(moments)
 library(arrow)
+library(readr)
 
 theme_set(theme_bw())
 
@@ -25,24 +26,58 @@ root_path <- dirname(notebooks_path)
 ```{r remove pre-2000 data, include=FALSE}
 #only run this snippet once
 
-raw_file_path <- file.path(root_path,"movie_data_1950_2020.csv")
+# raw_file_path <- file.path(root_path,"movie_data_1950_2020.csv")
+# 
+# raw_data <- read.csv(raw_file_path, header = TRUE, sep = ",")
+# 
+# #convert release_year to numeric and drop all obs after 200-
+# post_2000_raw <- raw_data %>%
+#   mutate(release_year = strtoi(release_year)) %>%
+#            filter(release_year >= 2000)
+# 
+# #save as parquet file
+# write_parquet(post_2000_raw,
+#               sink = file.path(root_path, "post_2000_data"))
 
-raw_data <- read.csv(raw_file_path, header = TRUE, sep = ",")
-
-#convert release_year to numeric and drop all obs after 200-
-post_2000_raw <- raw_data %>%
-  mutate(release_year = strtoi(release_year)) %>%
-           filter(release_year >= 2000)
-
-#save as parquet file
-write_parquet(post_2000_raw,
-              sink = file.path(root_path, "post_2000_data"))
+#browse_data <- post_2000_raw[1:50,]
 
 ```
 
 
 ```{r load parquet file, include=FALSE}
 post_2000_raw <- read_parquet(file = file.path(root_path, "post_2000_data"))
+
+#count total obs (3356 obs)
+ttl_count <- nrow(post_2000_raw)
+
+#count obs without missing budget and box office that will be used in analysis
+#597 obs >=2000
+analysis_count <- post_2000_raw %>%
+  filter(box_office != "" & budget != "") %>%
+  nrow
+
+#create clean budget and box office numbers
+post_2000_raw <- post_2000_raw %>%
+  mutate(
+    clean_budget = ifelse(
+      grepl("m", budget, fixed=TRUE),
+      parse_number(budget),
+      parse_number(budget)/1000000
+      ),
+    clearn_box_office = ifelse (
+      grepl("m", box_office, fixed=TRUE),
+      parse_number(box_office),
+      parse_number(box_office)/1000000
+    )
+  )
+
+browse_data <- post_2000_raw[1:50,]
+```
+
+```{r inital data cleaning , include=FALSE}
+
+
+
 
 ```
 
