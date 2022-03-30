@@ -1,0 +1,48 @@
+---
+title: "MP_data_processing"
+author: "Matt Pitz"
+date: '2022-03-30'
+output: html_document
+---
+
+```{r load packages and set options, include=FALSE}
+library(tidyverse) 
+library(magrittr)
+library(knitr)
+library(patchwork)
+library(moments)
+library(arrow)
+
+theme_set(theme_bw())
+
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE)
+
+notebooks_path <- getwd()
+root_path <- dirname(notebooks_path)
+```
+
+```{r remove pre-2000 data, include=FALSE}
+#only run this snippet once
+
+raw_file_path <- file.path(root_path,"movie_data_1950_2020.csv")
+
+raw_data <- read.csv(raw_file_path, header = TRUE, sep = ",")
+
+#convert release_year to numeric and drop all obs after 200-
+post_2000_raw <- raw_data %>%
+  mutate(release_year = strtoi(release_year)) %>%
+           filter(release_year >= 2000)
+
+#save as parquet file
+write_parquet(post_2000_raw,
+              sink = file.path(root_path, "post_2000_data"))
+
+```
+
+
+```{r load parquet file, include=FALSE}
+post_2000_raw <- read_parquet(file = file.path(root_path, "post_2000_data"))
+
+```
+
