@@ -13,6 +13,7 @@ library(patchwork)
 library(moments)
 library(arrow)
 library(readr)
+library(ggplot2)
 
 theme_set(theme_bw())
 
@@ -27,14 +28,14 @@ root_path <- dirname(notebooks_path)
 #only run this snippet once
 
 # raw_file_path <- file.path(root_path,"movie_data_1950_2020.csv")
-# 
+#
 # raw_data <- read.csv(raw_file_path, header = TRUE, sep = ",")
-# 
+#
 # #convert release_year to numeric and drop all obs after 200-
 # post_2000_raw <- raw_data %>%
 #   mutate(release_year = strtoi(release_year)) %>%
 #            filter(release_year >= 2000)
-# 
+#
 # #save as parquet file
 # write_parquet(post_2000_raw,
 #               sink = file.path(root_path, "post_2000_data"))
@@ -67,7 +68,7 @@ post_2000_raw <- post_2000_raw %>%
       parse_number(budget),
       parse_number(budget)/1000000
       ),
-    clearn_box_office = ifelse (
+    clean_box_office = ifelse (
       grepl("m", box_office, fixed=TRUE),
       parse_number(box_office),
       parse_number(box_office)/1000000
@@ -76,5 +77,17 @@ post_2000_raw <- post_2000_raw %>%
 
 browse_data <- post_2000_raw[1:50,]
 
+```
+```{r histogram for proposal}
+post_2000_raw_histogram <- post_2000_raw %>%
+filter(box_office != "" & budget != "") %>%
+  ggplot() + 
+  aes(x = clean_budget, y = clean_box_office) +
+  geom_point() +
+    labs(title ='Box Office Earning Based On Budget',
+       x ='Budget (Million $)',
+       y ='Box Office (Million $)')
+
+post_2000_raw_histogram
 ```
 
