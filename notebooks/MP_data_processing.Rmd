@@ -1,7 +1,7 @@
 ---
 title: "MP_data_processing"
 author: "Matt Pitz"
-date: '2022-03-30'
+date: '2022-04-01'
 output: html_document
 ---
 
@@ -74,6 +74,11 @@ post_2000_raw <- post_2000_raw %>%
       parse_number(box_office)/1000000
     )
   )
+#create primary genre
+post_2000_raw$genre_primary <- str_extract(post_2000_raw$genre,"(\\w+)") 
+
+#create release month
+post_2000_raw$release_month <- str_extract(post_2000_raw$release_date,"(\\w+)") 
 
 browse_data <- post_2000_raw[1:50,]
 
@@ -82,7 +87,7 @@ browse_data <- post_2000_raw[1:50,]
 post_2000_raw_histogram <- post_2000_raw %>%
 filter(box_office != "" & budget != "") %>%
   ggplot() + 
-  aes(x = clean_budget, y = clean_box_office) +
+  aes(x = clean_budget, y = clean_box_office, color = genre_primary) +
   geom_point() +
     labs(title ='Box Office Earning Based On Budget',
        x ='Budget (Million $)',
