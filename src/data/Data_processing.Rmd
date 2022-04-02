@@ -47,7 +47,7 @@ data_path <- file.path(root_path,"data","raw")
 
 
 ```{r load parquet file, include=FALSE}
-post_2000_raw <- read_parquet(file = file.path(root_path, "post_2000_data"))
+post_2000_raw <- read_parquet(file = file.path(data_path, "post_2000_data"))
 
 ```
 
@@ -75,6 +75,16 @@ post_2000_raw <- post_2000_raw %>%
       parse_number(box_office)/1000000
     )
   )
+
+#correct for billions
+post_2000_raw <- post_2000_raw %>%
+  mutate(
+    clean_box_office = ifelse(
+      grepl("b", box_office, fixed=TRUE),
+      parse_number(box_office)*1000,
+      clean_box_office) 
+  )
+    
 
 #create primary genre
 post_2000_raw$genre_primary <- str_extract(post_2000_raw$genre, "[^/]+")
@@ -120,11 +130,55 @@ post_2000_raw$release_month <- str_extract(post_2000_raw$release_date,"(\\w+)")
 
 #convert duration into minutes
 post_2000_raw <- post_2000_raw %>% 
-  mutatate(
-    duration_minutes = 
+  mutate(
+    temp_hours = as.numeric(substr(duration,1,1))*60,
+    temp_minutes = ifelse(
+      grepl("m",duration),
+      parse_number(str_extract(duration, "[0-9]{1,2}m")),
+      0),
+    duration_minutes = temp_hours + temp_minutes
   ) 
 
+post_2000_raw <- post_2000_raw %>%
+  select(-temp_hours, -temp_minutes)
 
-browse_data <- post_2000_raw[1:30,]
+#award flag
+post_2000_raw <- post_2000_raw %>% 
+  mutate(
+    received_award = !is.na(awards)
+  )
+
+#browse_data <- post_2000_raw[1:30,]
+```
+
+```{r read in inflation}
+
+#load in inflation
+inflation_file_path <- file.path(data_path,"Inflation_Rates.csv")
+ 
+inflation_data <- read.csv(inflation_file_path, header = TRUE, sep = ",")
+
+colnames(inflation_data)[1] <- "release_year"
+
+post_2000_merge <- merge(post_2000_raw,inflation_data ,by="release_year")
+
+#convert dollar values to real
+post_2000_merge$clean_budget_real <- post_2000_merge$clean_budget*post_2000_merge$Inflation_Rate
+post_2000_merge$clean_box_office_real <- post_2000_merge$clean_box_office*post_2000_merge$Inflation_Rate
+
+#browse_data2 <- post_2000_merge[1000:1030,]
+```
+
+```{r, scatter plot}
+post_2000_raw_histogram <- post_2000_merge %>%
+filter(box_office != "" & budget != "") %>%
+  ggplot() + 
+  aes(x = clean_budget_real, y = clean_box_office_real, color = genre_primary) +
+  geom_point() +
+    labs(title ='Box Office Earning Based On Budget',
+       x ='Budget (Million $)',
+       y ='Box Office (Million $)')
+
+post_2000_raw_histogram
 ```
 
