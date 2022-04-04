@@ -1,0 +1,216 @@
+---
+title: "MP_data_processing_model"
+author: "Matt Pitz, Nan Li"
+date: '2022-04-03'
+output: html_document
+---
+
+```{r load packages and set options, include=FALSE}
+library(tidyverse) 
+library(magrittr)
+library(knitr)
+if (!require("patchwork")) install.packages('patchwork')
+if (!require("moments")) install.packages('moments')
+if (!require("arrow")) install.packages('arrow')
+library(patchwork)
+library(moments)
+library(arrow)
+library(readr)
+library(ggplot2)
+#tinytex::install_tinytex()
+theme_set(theme_bw())
+
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE)
+
+notebooks_path <- getwd()
+root_path <- dirname(notebooks_path)
+data_path <- file.path(root_path,"data","raw")
+```
+
+```{r remove pre-2000 data, include=FALSE}
+# #only run this snippet once
+# 
+#  raw_file_path <- file.path(data_path,"movie_data_1950_2020.csv")
+# 
+#  raw_data <- read.csv(raw_file_path, header = TRUE, sep = ",")
+# 
+#  #convert release_year to numeric and drop all obs after 200-
+#  post_2000_raw <- raw_data %>%
+#    mutate(release_year = strtoi(release_year)) %>%
+#             filter(release_year >= 2000)
+# 
+#  #save as parquet file
+#  write_parquet(post_2000_raw,
+#                sink = file.path(data_path, "post_2000_data"))
+# 
+# #browse_data <- post_2000_raw[1:50,]
+
+```
+
+
+```{r load parquet file, include=FALSE}
+post_2000_raw <- read_parquet(file = file.path(data_path, "post_2000_data"))
+
+```
+
+```{r inital data cleaning , include=FALSE}
+#count total obs (3356 obs)
+ttl_count <- nrow(post_2000_raw)
+
+#count obs without missing budget and box office that will be used in analysis
+#597 obs >=2000
+analysis_count <- post_2000_raw %>%
+  filter(box_office != "" & budget != "") %>%
+  nrow
+
+#create clean budget and box office numbers
+post_2000_raw <- post_2000_raw %>%
+  mutate(
+    clean_budget = ifelse(
+      grepl("m", budget, fixed=TRUE),
+      parse_number(budget),
+      parse_number(budget)/1000000
+      ),
+    clean_box_office = ifelse (
+      grepl("m", box_office, fixed=TRUE),
+      parse_number(box_office),
+      parse_number(box_office)/1000000
+    )
+  )
+
+#correct for billions
+post_2000_raw <- post_2000_raw %>%
+  mutate(
+    clean_box_office = ifelse(
+      grepl("b", box_office, fixed=TRUE),
+      parse_number(box_office)*1000,
+      clean_box_office) 
+  )
+    
+
+#create primary genre
+post_2000_raw$genre_primary <- str_extract(post_2000_raw$genre, "[^/]+")
+
+#combine related categories
+post_2000_raw <- post_2000_raw %>%
+  mutate(genre_primary = ifelse(
+    genre_primary == "Adaptation" | genre_primary == "Docudrama" | genre_primary == "Hip hop" |
+    genre_primary == "Historical drama" | genre_primary == "History" | genre_primary == "LGBT" |
+    genre_primary == "Pornographic" | genre_primary == "Road",
+    "Misc",
+    genre_primary
+    ),
+    genre_primary = ifelse( 
+     genre_primary == "Teen",
+     "Family",
+     genre_primary
+    ),
+    genre_primary = ifelse( 
+     genre_primary == "Psychological thriller",
+     "Thriller",
+     genre_primary
+    ),
+    genre_primary = ifelse( 
+     genre_primary == "Music",
+     "Musical",
+     genre_primary
+    ),
+    genre_primary = ifelse( 
+     genre_primary == "Noir",
+     "Crime",
+     genre_primary
+    ),
+    genre_primary = ifelse( 
+     genre_primary == "Action Thriller",
+     "Action",
+     genre_primary
+    )
+  )
+
+#create release month
+post_2000_raw$release_month <- str_extract(post_2000_raw$release_date,"(\\w+)") 
+post_2000_raw <- post_2000_raw %>% 
+  mutate(
+    summer = ifelse(
+    release_month == "May" |release_month == "June" | release_month == "July", 1,0) 
+  )
+post_2000_raw <- post_2000_raw %>% 
+  mutate(
+    thanksxmas = ifelse(
+    release_month == "November" |release_month == "December" | release_month == "January",1,0)
+  )
+
+#convert duration into minutes
+post_2000_raw <- post_2000_raw %>% 
+  mutate(
+    temp_hours = as.numeric(substr(duration,1,1))*60,
+    temp_minutes = ifelse(
+      grepl("m",duration),
+      parse_number(str_extract(duration, "[0-9]{1,2}m")),
+      0),
+    duration_minutes = temp_hours + temp_minutes
+  ) 
+
+post_2000_raw <- post_2000_raw %>%
+  select(-temp_hours, -temp_minutes)
+
+#award flag 
+post_2000_raw <- post_2000_raw %>% 
+  mutate(
+    #received_award = !is.na(awards) 
+    received_award = case_when(
+    awards == "" ~ 0, 
+    awards != "" ~ 1)
+  )
+post_2000_raw$received_award
+#browse_data <- post_2000_raw[1:30,]
+```
+
+```{r read in inflation}
+
+#load in inflation
+inflation_file_path <- file.path(data_path,"Inflation_Rates.csv")
+ 
+inflation_data <- read.csv(inflation_file_path, header = TRUE, sep = ",")
+
+colnames(inflation_data)[1] <- "release_year"
+
+post_2000_merge <- merge(post_2000_raw,inflation_data ,by="release_year")
+
+#convert dollar values to real
+post_2000_merge$clean_budget_real <- post_2000_merge$clean_budget*post_2000_merge$Inflation_Rate
+post_2000_merge$clean_box_office_real <- post_2000_merge$clean_box_office*post_2000_merge$Inflation_Rate
+
+#browse_data2 <- post_2000_merge[1000:1030,]
+```
+
+```{r, scatter plot}
+post_2000_raw_histogram <- post_2000_merge %>%
+filter(box_office != "" & budget != "") %>%
+  ggplot() + 
+  aes(x = clean_budget_real, y = clean_box_office_real, color = genre_primary) +
+  geom_point() +
+    labs(title ='Box Office Earning Based On Budget',
+       x ='Budget (Million $)',
+       y ='Box Office (Million $)')
+
+post_2000_raw_histogram
+```
+
+### EDA
+
+```{r select columns of interests for EDA}
+post_2000_raw <- post_2000_merge[c('title','maturity_rating','duration_minutes',
+                                   'clean_box_office_real','clean_budget_real',
+                                   'genre_primary','rotten_tomatoes_rating',
+         'release_year','release_month','summer','thanksxmas','received_award')]
+post_2000 <- na.omit(post_2000_raw)
+
+summary(post_2000)
+
+```
+```{r EDA, histogram}
+
+```
+
