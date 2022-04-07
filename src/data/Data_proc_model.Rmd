@@ -164,7 +164,7 @@ post_2000_raw <- post_2000_raw %>%
     awards != "" ~ 1)
   )
 post_2000_raw$rotten_tomatoes_rating <- as.numeric(sub("%", "",post_2000_raw$rotten_tomatoes_rating,fixed=TRUE))/100
-#post_2000_raw$rotten_tomatoes_rating
+# post_2000_raw$rotten_tomatoes_rating
 ```
 
 ```{r read in inflation}
@@ -182,7 +182,7 @@ post_2000_merge <- merge(post_2000_raw,inflation_data ,by="release_year")
 post_2000_merge$clean_budget_real <- post_2000_merge$clean_budget*post_2000_merge$Inflation_Rate
 post_2000_merge$clean_box_office_real <- post_2000_merge$clean_box_office*post_2000_merge$Inflation_Rate
 
-#browse_data2 <- post_2000_merge[1000:1030,]
+# browse_data2 <- post_2000_merge[1000:1030,]
 ```
 
 ```{r, scatter plot}
@@ -241,7 +241,17 @@ post_2000 %>%
   select(box_office_log, budget_log, duration_minutes,rotten_tomatoes_rating) %>%
   GGally::ggpairs()
 ```
+```{r box office and binary variable (recieved_award and release_month) }
+p5 <- post_2000 %>%
+  ggplot() + aes(x=clean_budget_real, y=log(clean_box_office_real + 1), color=received_award) + geom_point(show.legend=FALSE) + labs(title = 'Effects of Awards Recieved', x = 'Budget (Million $)', y = 'Box Office (Million $)', color = 'Received\nAward')
+p5
 
+p6 <- post_2000 %>%
+  ggplot() + aes(x=received_award, y=log(clean_box_office_real + 1)) + geom_boxplot() + labs(title = 'Effects of Awards Recieved', x = 'Received Award', y = 'Box Office (Million $)')
+p6
+
+p5|p6
+```
 ###models
 
 Model 1: Baseline model (only including one dependent variable):
@@ -283,9 +293,31 @@ stargazer(model_1,
           model_2,
           model_3,
           type = 'text',
+          header = FALSE,
           se = list(get_robust_se(model_1),
                     get_robust_se(model_2),
                     get_robust_se(model_3)
                     )
           )
+```
+```{r f-test for model_1, model_2 and model_3}
+anova(model_1, model_2, test = 'F')
+# The p-value is less than 0.05 thus we can reject the null hypothesis, the additional parameter that we have estimated in `model_2` makes this second model more fully represent the true population.
+anova(model_2, model_3, test = 'F')
+# Between model_2 and model_3 the additional covariate genre_primary in model_3 
+# have explanatory power and improves the fit of the model. The null hypothesis is 
+# that model_2 model_3 have equal residual sum of squares. A F test was
+# conducted. Assumptions of F test: 1) the population must be normally
+# distributed and 2) the samples must be independent events. If the
+# probability (p-value) of observing F-value that is at least as large
+# as the F-value that the study got (4.292) is lower than 0.05, then we
+# can reject the null hypothesis. We can conclude by rejecting our null
+# hypothesis since the p-value is less than 0.05 in this case. Model 3
+# with additional covariates have explanatory power (is able to explain
+# the variance in the dependent variable better than model 1 and 2) and are
+# improving the model performance.
+```
+```{r print regression tables with robust standard errors}
+coeftest(model_1, vcovHC, type = "HC1")
+coeftest(model_3, vcovHC, type = "HC1")
 ```
