@@ -236,7 +236,7 @@ post_2000 <- post_2000 %>%
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 if (!require("stargazer")) install.packages('stargazer')
 if (!require("sandwich")) install.packages('sandwich')
-source('./get_robust_se.R')
+# source('./get_robust_se.R')
 model_1 = lm(data=post_2000, box_office_log ~ budget_log)
 model_2 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + summer + thanksxmas + received_award +
@@ -244,18 +244,25 @@ model_2 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
 model_3 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + summer + thanksxmas + received_award +
                maturity_rating + genre_primary)
+# No binary covariates (summer, thanksxmas, received_award)
+model_4 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
+             rotten_tomatoes_rating + maturity_rating + genre_primary)
 
 
-cat("Summary for models 1 to 3:")
+cat("Summary for models 1 to 4:")
 
 stargazer(model_1,
           model_2,
           model_3,
+          model_4,
           type = 'text',
-          se = list(get_robust_se(model_1),
-                    get_robust_se(model_2),
-                    get_robust_se(model_3)
-                    )
+          header = FALSE,
+          star.cutoffs = c(0.05, 0.01, 0.001)
+          # se = list(get_robust_se(model_1),
+          #           get_robust_se(model_2),
+          #           get_robust_se(model_3),
+          #           get_robust_se(model_4)
+          #           )
           )
 ```
 ```{r f-test for model_1, model_2 and model_3}
@@ -274,8 +281,12 @@ anova(model_2, model_3, test = 'F')
 # with additional covariates have explanatory power (is able to explain
 # the variance in the dependent variable better than model 1 and 2) and are
 # improving the model performance.
+anova(model_3, model_4, test = 'F')
+# Failed to reject null hypothesis, p-value greater than 0.05. The binary
+# covariates do not have additional explanatory power and does not improve the
+# performance of the model.
 ```
 ```{r print regression tables with robust standard errors}
 coeftest(model_1, vcovHC, type = "HC1")
-coeftest(model_3, vcovHC, type = "HC1")
+coeftest(model_4, vcovHC, type = "HC1")
 ```
