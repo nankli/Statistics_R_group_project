@@ -1,6 +1,6 @@
 ---
 title: "MP_data_processing_model"
-author: "Matt Pitz, Nan Li"
+author: "Matt Pitz, Nan Li, Ada Guan"
 date: '2022-04-03'
 output: html_document
 ---
@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE)
 
 notebooks_path <- getwd()
 root_path <- dirname(notebooks_path)
-data_path <- file.path(root_path,"data","raw")
+data_path <- file.path(root_path,"src","data","raw")
 ```
 
 ```{r remove pre-2000 data, include=FALSE}
@@ -219,7 +219,19 @@ Model 3: Model including more dependent variables of interest:
 $$
 \text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{rotten_tomatoes_rating} + \beta_4*\text{summer} + \beta_5*\text{thanksxmas} + \beta_6*\text{award} + \beta_7*\text{maturity_rating} + \beta_8*\text{genre_primary}
 $$
+```{r select columns of interests}
+post_2000_raw <- post_2000_merge[c('title','maturity_rating','duration_minutes',
+                                   'clean_box_office_real','clean_budget_real',
+                                   'genre_primary','rotten_tomatoes_rating',
+         'release_year','release_month','summer','thanksxmas','received_award')]
+post_2000 <- na.omit(post_2000_raw)
 
+post_2000 <- post_2000 %>% 
+  mutate(
+    box_office_log = log(clean_box_office_real + 1), 
+    budget_log = log(clean_budget_real + 1)
+  )
+```
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 if (!require("stargazer")) install.packages('stargazer')
 if (!require("sandwich")) install.packages('sandwich')

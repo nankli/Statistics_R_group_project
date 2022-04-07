@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo=FALSE, message=FALSE)
 
 notebooks_path <- getwd()
 root_path <- dirname(notebooks_path)
-data_path <- file.path(root_path,"data","raw")
+data_path <- file.path(root_path,"src","data","raw")
 ```
 
 ```{r remove pre-2000 data, include=FALSE}
@@ -42,7 +42,6 @@ data_path <- file.path(root_path,"data","raw")
 #                sink = file.path(data_path, "post_2000_data"))
 # 
 # #browse_data <- post_2000_raw[1:50,]
-
 ```
 
 
