@@ -17,6 +17,8 @@ library(moments)
 library(arrow)
 library(readr)
 library(ggplot2)
+library(stargazer)
+library(lmtest)
 #tinytex::install_tinytex()
 theme_set(theme_bw())
 
@@ -45,7 +47,6 @@ data_path <- file.path(root_path,"src","data","raw")
 #                sink = file.path(data_path, "post_2000_data"))
 # 
 # #browse_data <- post_2000_raw[1:50,]
-
 ```
 
 
@@ -251,7 +252,6 @@ stargazer(model_1,
           model_2,
           model_3,
           type = 'text',
-          header = FALSE,
           se = list(get_robust_se(model_1),
                     get_robust_se(model_2),
                     get_robust_se(model_3)
