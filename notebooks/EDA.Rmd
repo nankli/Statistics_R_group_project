@@ -210,7 +210,7 @@ summary(post_2000)
 
 ```
 
-```{r EDA, histograms for box office}
+```{r EDA, histograms for box office using +1 action for study purpose}
 p1 <- post_2000 %>%
   ggplot() + aes(x=clean_box_office_real) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of box office', x = 'Box office (Million $)', y = 'Frequency')
 #added 1 to the box_office to avoid negative values after log transformation
@@ -218,7 +218,7 @@ p2 <- post_2000 %>%
   ggplot() + aes(x=log(clean_box_office_real + 1)) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of log(box office)', x = 'log(Box office + 1) (Million $)', y = 'Frequency')
 p1|p2
 ```
-```{r EDA, histograms for budget}
+```{r EDA, histograms for budget using +1 action for study purpose}
 p3 <- post_2000 %>%
   ggplot() + aes(x=clean_budget_real) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of budget', x = 'Budget (Million $)', y = 'Frequency')
 
@@ -226,29 +226,72 @@ p4 <- post_2000 %>%
   ggplot() + aes(x=log(clean_budget_real + 1)) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of log(budget)', x = 'log(Budget + 1) (Million $)', y = 'Frequency')
 p3|p4
 ```
-The histogram shows that the log transformation is necessary for the budget and box office data.
+The histogram shows that the log transformation is necessary for the budget and box office data. And we can also see there are outliers in both of these variables.
+```{r EDA, check and remove extreme outliers from box office}
+post_2000_filtered <- post_2000_raw %>%
+  filter(clean_box_office_real >= 1.0 & clean_budget_real >=1.0)
+         
+p5 <- post_2000_filtered  %>%
+  ggplot() + aes(x = "", y = clean_box_office_real) + geom_boxplot(fill = "#0c4c8a") + theme_minimal() + labs(title = 'Boxplot of box office', y = 'Box office (Million $)')
+
+#out <-boxplot.stats(post_2000_filtered$clean_box_office_real)$out
+#out_ind <- which(post_2000_filtered$clean_box_office_real %in% c(out))
+#out_ind
+
+p6 <- post_2000_filtered  %>%
+  ggplot() + aes(x = "", y = clean_budget_real) + geom_boxplot(fill = "#0c4c8a") + theme_minimal() + labs(title = 'Boxplot of budget', y = 'budget (Million $)')
+
+p5|p6
+
+```
+
+
+```{r EDA, histograms for box office, removed values between 0 and 1 for models}
+#only remove extreme outliers
+post_2000_filtered <- post_2000_filtered %>%
+  filter(clean_box_office_real < 2000 & clean_budget_real <350)
+
+p1_1 <- post_2000_filtered %>%
+  ggplot() + aes(x=clean_box_office_real) + geom_histogram(position ='dodge', bins=40) + labs(title = 'Distribution of box office', x = 'Box office (Million $)', y = 'Frequency')
+
+p2_1 <- post_2000_filtered %>%
+  ggplot() + aes(x=log(clean_box_office_real)) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of log(Box office)', x = 'log(Box office) (Million $)', y = 'Frequency')
+p1_1|p2_1
+```
+```{r EDA, histograms for budget, removed values between 0 and 1 for models}
+#only remove extreme outliers
+post_2000_filtered <- post_2000_filtered %>%
+  filter(clean_box_office_real < 2000 & clean_budget_real <350)
+p3_1 <- post_2000_filtered %>%
+  ggplot() + aes(x=clean_budget_real) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of budget', x = 'Budget (Million $)', y = 'Frequency')
+
+p4_1 <- post_2000_filtered %>%
+  ggplot() + aes(x=log(clean_budget_real + 1)) + geom_histogram(position ='dodge', bins=30) + labs(title = 'Distribution of log(Budget)', x = 'log(Budget) (Million $)', y = 'Frequency')
+p3_1|p4_1
+
+```
 Next, we will take a look at the correlation between numerical variables.
-#correlation matrix is applied here. 
+correlation matrix is applied here. 
 
 ```{r EDA, correlation matrix}
 if (!require("GGally")) install.packages('GGally')
 post_2000 <- post_2000 %>% 
   mutate(
-    box_office_log = log(clean_box_office_real + 1), 
-    budget_log = log(clean_budget_real + 1)
+    box_office_log = log(clean_box_office_real), 
+    budget_log = log(clean_budget_real)
   )
 post_2000 %>%
   select(box_office_log, budget_log, duration_minutes,rotten_tomatoes_rating) %>%
   GGally::ggpairs()
 ```
 ```{r box office and binary variable (recieved_award and release_month) }
-p5 <- post_2000 %>%
+p7 <- post_2000 %>%
   ggplot() + aes(x=clean_budget_real, y=log(clean_box_office_real + 1), color=received_award) + geom_point(show.legend=FALSE) + labs(title = 'Effects of Awards Recieved', x = 'Budget (Million $)', y = 'Box Office (Million $)', color = 'Received\nAward')
-p5
+p7
 
-p6 <- post_2000 %>%
+p8 <- post_2000 %>%
   ggplot() + aes(x=received_award, y=log(clean_box_office_real + 1)) + geom_boxplot() + labs(title = 'Effects of Awards Recieved', x = 'Received Award', y = 'Box Office (Million $)')
-p6
+p8
 
-p5|p6
+p7|p8
 ```

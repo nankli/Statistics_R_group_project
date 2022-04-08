@@ -209,17 +209,15 @@ $$
 
 Model 2: Model including dependent variables of interest:
 $$
-\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{rotten_tomatoes_rating} + \beta_4*\text{summer} + \beta_5*\text{thanksxmas} + \beta_6*\text{award} + \beta_7*\text{maturity_rating}
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary}
 $$
-'title','maturity_rating','duration_minutes',
-                                   'clean_box_office_real','clean_budget_real',
-                                   'genre_primary','rotten_tomatoes_rating',
-         'release_year','release_month','summer','thanksxmas','received_award')]
+
 
 Model 3: Model including more dependent variables of interest:
 $$
 \text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{rotten_tomatoes_rating} + \beta_4*\text{summer} + \beta_5*\text{thanksxmas} + \beta_6*\text{award} + \beta_7*\text{maturity_rating} + \beta_8*\text{genre_primary}
 $$
+
 ```{r select columns of interests}
 post_2000_raw <- post_2000_merge[c('title','maturity_rating','duration_minutes',
                                    'clean_box_office_real','clean_budget_real',
@@ -232,38 +230,38 @@ post_2000 <- post_2000 %>%
     box_office_log = log(clean_box_office_real + 1), 
     budget_log = log(clean_budget_real + 1)
   )
+post_2000_filtered <- post_2000 %>%
+  #remove extreme outliers as a result of EDA, remove values between 0 and 1
+  filter(clean_box_office_real < 2000 & clean_box_office_real >= 1.0 & clean_budget_real >=1.0 & clean_budget_real <350)
 ```
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 if (!require("stargazer")) install.packages('stargazer')
 if (!require("sandwich")) install.packages('sandwich')
-# source('./get_robust_se.R')
+if (!require("lmtest")) install.packages('lmtest')
+#source('../src/data/get_robust_se.R')
 model_1 = lm(data=post_2000, box_office_log ~ budget_log)
 model_2 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
-             rotten_tomatoes_rating + summer + thanksxmas + received_award +
-               maturity_rating)
+               maturity_rating + genre_primary)
 model_3 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + summer + thanksxmas + received_award +
                maturity_rating + genre_primary)
-# No binary covariates (summer, thanksxmas, received_award)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
+# remove binary covariates (summer, thanksxmas, received_award) from model_3 based on the results
 model_4 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + maturity_rating + genre_primary)
 
 
-cat("Summary for models 1 to 4:")
+se.model_1 = coeftest(model_1, vcov = vcovHC)[ , "Std. Error"]
+se.model_2 = coeftest(model_2, vcov = vcovHC)[ , "Std. Error"]
+se.model_3 = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
+se.model_4 = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
 
-stargazer(model_1,
-          model_2,
-          model_3,
-          model_4,
-          type = 'text',
-          header = FALSE,
-          star.cutoffs = c(0.05, 0.01, 0.001)
-          # se = list(get_robust_se(model_1),
-          #           get_robust_se(model_2),
-          #           get_robust_se(model_3),
-          #           get_robust_se(model_4)
-          #           )
-          )
+model_a_table <- stargazer(model_1, model_2, model_3, model_4, type = "text",
+          header=FALSE, no.space=TRUE, column.sep.width = "3pt",
+          #se = list(se.model_1, se.model_2, se.model_3, se.model_4),
+          star.cutoffs = c(0.05, 0.01, 0.001), title = "Summary for models 1 to 4")
 ```
 ```{r f-test for model_1, model_2 and model_3}
 anova(model_1, model_2, test = 'F')
