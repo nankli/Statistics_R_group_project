@@ -248,9 +248,9 @@ model_3 = lm(data=post_2000_filtered, box_office_log ~ budget_log + duration_min
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
-# remove binary covariates (summer, thanksxmas, received_award) from model_3 based on the results
+# remove binary covariates (summer, received_award) from model_3 based on the results
 model_4 = lm(data=post_2000_filtered, box_office_log ~ budget_log + duration_minutes +
-             rotten_tomatoes_rating + maturity_rating + genre_primary)
+             thanksxmas + rotten_tomatoes_rating + maturity_rating + genre_primary)
 
 
 se.model_1 = coeftest(model_1, vcov = vcovHC)[ , "Std. Error"]
