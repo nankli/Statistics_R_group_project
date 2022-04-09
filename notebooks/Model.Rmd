@@ -225,14 +225,14 @@ post_2000_raw <- post_2000_merge[c('title','maturity_rating','duration_minutes',
          'release_year','release_month','summer','thanksxmas','received_award')]
 post_2000 <- na.omit(post_2000_raw)
 
-post_2000 <- post_2000 %>% 
-  mutate(
-    box_office_log = log(clean_box_office_real + 1), 
-    budget_log = log(clean_budget_real + 1)
-  )
 post_2000_filtered <- post_2000 %>%
   #remove extreme outliers as a result of EDA, remove values between 0 and 1
   filter(clean_box_office_real < 2000 & clean_box_office_real >= 1.0 & clean_budget_real >=1.0 & clean_budget_real <350)
+post_2000_filtered <- post_2000_filtered %>% 
+  mutate(
+    box_office_log = log(clean_box_office_real), 
+    budget_log = log(clean_budget_real)
+  )
 ```
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 if (!require("stargazer")) install.packages('stargazer')
