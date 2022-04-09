@@ -71,7 +71,7 @@ $$
 post_1990_raw <- post_1990_merge[c('title','maturity_rating','duration_minutes',
                                    'clean_box_office_real','clean_budget_real',
                                    'genre_primary','rotten_tomatoes_rating',
-         'release_year','release_month','summer','thanksxmas','received_award')]
+         'release_year','release_month','summer','thanksxmas','received_award','meta_critic_rating')]
 post_1990 <- na.omit(post_1990_raw)
 
 post_1990_filtered <- post_1990 %>%
@@ -92,14 +92,14 @@ model_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log)
 model_2 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
                maturity_rating + genre_primary)
 model_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             rotten_tomatoes_rating + summer + thanksxmas + received_award +
+             meta_critic_rating + summer + thanksxmas + received_award +
                maturity_rating + genre_primary)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 # remove binary covariates (summer, received_award) from model_3 based on the results
 model_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             thanksxmas + rotten_tomatoes_rating + maturity_rating + genre_primary)
+             thanksxmas + meta_critic_rating + maturity_rating + genre_primary)
 
 
 se.model_1 = coeftest(model_1, vcov = vcovHC)[ , "Std. Error"]
