@@ -34,18 +34,34 @@ post_1990_merge <- read_parquet(file = file.path(data_path, "post_1990_clean_dat
 
 
 ### EDA
-```{r, scatter plot}
-post_1990_raw_histogram <- post_1990_merge %>%
+```{r, scatter plot bo}
+post_1990_raw_scatter <- post_1990_merge %>%
 filter(box_office != "" & budget != "") %>%
   ggplot() + 
   aes(x = clean_budget_real, y = clean_box_office_real, color = genre_primary) +
   geom_point() +
     labs(title ='Box Office Earning Based On Budget',
        x ='Budget (Million $)',
-       y ='Box Office (Million $)')
+       y ='Box Office (Million $)',
+       color = 'Genre')
 
-post_1990_raw_histogram
+post_1990_raw_scatter
 ```
+
+```{r maturity rating vs box office and budget}
+post_1990_raw_scatter <- post_1990_merge %>%
+filter(box_office != "" & budget != "") %>%
+  ggplot() + 
+  aes(x = clean_budget_real, y = clean_box_office_real, color = maturity_rating) +
+  geom_point() +
+    labs(title ='Box Office Earning Based On Budget',
+       x ='Budget (Million $)',
+       y ='Box Office (Million $)',
+       color = 'Maturity Rating')
+
+post_1990_raw_scatter
+```
+
 
 ```{r select columns of interests for EDA}
 post_1990_raw <- post_1990_merge[c('title','maturity_rating','duration_minutes',
@@ -57,6 +73,36 @@ post_1990 <- na.omit(post_1990_raw)
 summary(post_1990)
 
 ```
+
+```{r describe categorical data, echo=FALSE, message=TRUE, warning=TRUE}
+attach(post_1990,warn.conflicts = FALSE)
+unique(maturity_rating)
+unique(genre_primary)
+unique(release_month)
+```
+```{r}
+attach(post_1990,warn.conflicts = FALSE)
+mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=sum),c('Ratings','Box Office'))
+mrating
+```
+
+```{r}
+attach(post_1990,warn.conflicts = FALSE)
+mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=length),c('Ratings','Number of Movies'))
+mrating
+```
+
+```{r}
+attach(post_1990,warn.conflicts = FALSE)
+years<-setNames(aggregate(title, list(release_year), FUN=length),c('Year','Number of Movies'))
+years
+```
+```{r}
+attach(post_1990,warn.conflicts = FALSE)
+genre_rating<-setNames(aggregate(clean_box_office_real, list(genre_primary,maturity_rating), FUN=length),c('Genre','Rating','Number of Movies'))
+genre_rating
+```
+
 
 ```{r EDA, histograms for box office using +1 action for study purpose}
 p1 <- post_1990 %>%
