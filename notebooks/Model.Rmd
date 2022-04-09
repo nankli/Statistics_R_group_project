@@ -239,17 +239,17 @@ if (!require("stargazer")) install.packages('stargazer')
 if (!require("sandwich")) install.packages('sandwich')
 if (!require("lmtest")) install.packages('lmtest')
 #source('../src/data/get_robust_se.R')
-model_1 = lm(data=post_2000, box_office_log ~ budget_log)
-model_2 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
+model_1 = lm(data=post_2000_filtered, box_office_log ~ budget_log)
+model_2 = lm(data=post_2000_filtered, box_office_log ~ budget_log + duration_minutes +
                maturity_rating + genre_primary)
-model_3 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
+model_3 = lm(data=post_2000_filtered, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + summer + thanksxmas + received_award +
                maturity_rating + genre_primary)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 # remove binary covariates (summer, thanksxmas, received_award) from model_3 based on the results
-model_4 = lm(data=post_2000, box_office_log ~ budget_log + duration_minutes +
+model_4 = lm(data=post_2000_filtered, box_office_log ~ budget_log + duration_minutes +
              rotten_tomatoes_rating + maturity_rating + genre_primary)
 
 
