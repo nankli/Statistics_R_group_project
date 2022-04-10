@@ -50,21 +50,25 @@ post_1990_raw_histogram
 
 ###models
 
-Model 1: Baseline model (only including one dependent variable):
+Model 1: Baseline model (only including one independent variable):
 
 $$
 \text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)}
 $$
 
-Model 2: Model including dependent variables of interest:
+Model 2: Model including additional independent variables of interest:
 $$
 \text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary}
 $$
 
-
-Model 3: Model including more dependent variables of interest:
+Model 3: Model including more independent variables of interest (meta_critic_rating and thankxmas):
 $$
-\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{rotten_tomatoes_rating} + \beta_4*\text{summer} + \beta_5*\text{thanksxmas} + \beta_6*\text{award} + \beta_7*\text{maturity_rating} + \beta_8*\text{genre_primary}
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary} + \beta_5*\text{meta_critic_rating} + \beta_6*\text{thanksxmas}
+$$
+
+Model 4: Model including additional binary variables (summer and received_award):
+$$
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary} + \beta_5*\text{meta_critic_rating} + \beta_6*\text{thanksxmas} + \beta_7*\text{summer} + \beta_8*\text{award}
 $$
 
 ```{r select columns of interests}
@@ -92,15 +96,14 @@ model_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log)
 model_2 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
                maturity_rating + genre_primary)
 model_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             meta_critic_rating + summer + thanksxmas + received_award +
-               maturity_rating + genre_primary)
+             maturity_rating + genre_primary + meta_critic_rating + thanksxmas)
+#Additional binary variables (summer and received_award)
+model_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
+             maturity_rating + genre_primary + meta_critic_rating + thanksxmas + summer + 
+               received_award)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
-# remove binary covariates (summer, received_award) from model_3 based on the results
-model_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             thanksxmas + meta_critic_rating + maturity_rating + genre_primary)
-
 
 se.model_1 = coeftest(model_1, vcov = vcovHC)[ , "Std. Error"]
 se.model_2 = coeftest(model_2, vcov = vcovHC)[ , "Std. Error"]
@@ -113,27 +116,37 @@ model_a_table <- stargazer(model_1, model_2, model_3, model_4, type = "text",
           star.cutoffs = c(0.05, 0.01, 0.001), title = "Summary for models 1 to 4")
 ```
 ```{r f-test for model_1, model_2 and model_3}
+#A F test was conducted. Assumptions of F test: 1) the population must be 
+# normally distributed and 2) the samples must be independent events. 
 anova(model_1, model_2, test = 'F')
-# The p-value is less than 0.05 thus we can reject the null hypothesis, the additional parameter that we have estimated in `model_2` makes this second model more fully represent the true population.
+# The p-value is less than 0.05 thus we can reject the null hypothesis, the 
+# additional parameter duration_minutes, maturity_rating, and genre_primary that 
+# were estimated in `model_2` makes this second model more fully represent the 
+# true population.
 anova(model_2, model_3, test = 'F')
-# Between model_2 and model_3 the additional covariate genre_primary in model_3 
-# have explanatory power and improves the fit of the model. The null hypothesis is 
-# that model_2 model_3 have equal residual sum of squares. A F test was
-# conducted. Assumptions of F test: 1) the population must be normally
-# distributed and 2) the samples must be independent events. If the
-# probability (p-value) of observing F-value that is at least as large
-# as the F-value that the study got (4.292) is lower than 0.05, then we
-# can reject the null hypothesis. We can conclude by rejecting our null
+# Between model_2 and model_3 the additional covariate meta_critic_rating 
+# and thanksxmas in model_3 have explanatory power and improves the fit 
+# of the model. The null hypothesis is that model_2 model_3 have equal residual 
+# sum of squares. If the probability (p-value) of observing F-value that is at 
+# least as large as the F-value that the study got (5.615) is lower than 0.05, 
+# then we can reject the null hypothesis. We can conclude by rejecting our null
 # hypothesis since the p-value is less than 0.05 in this case. Model 3
 # with additional covariates have explanatory power (is able to explain
 # the variance in the dependent variable better than model 1 and 2) and are
 # improving the model performance.
 anova(model_3, model_4, test = 'F')
 # Failed to reject null hypothesis, p-value greater than 0.05. The binary
-# covariates do not have additional explanatory power and does not improve the
-# performance of the model.
+# covariates in model_4, summer and received_award do not have additional 
+# explanatory power and does not improve the performance of the model.
 ```
 ```{r print regression tables with robust standard errors}
 coeftest(model_1, vcovHC, type = "HC1")
-coeftest(model_4, vcovHC, type = "HC1")
+coeftest(model_3, vcovHC, type = "HC1")
+```
+```{r r code and plots assessing normally distributed errors}
+print("Formal Test of Residual Normality")
+set.seed(56423)
+shapiro.test(sample(model_3$residuals, size = 5000,replace=TRUE))
+# P-value < 0.05, indicates that we can reject the null hypothesis and that it 
+# is normally distributed.
 ```
