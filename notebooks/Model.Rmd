@@ -101,6 +101,13 @@ model_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_min
 model_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
              maturity_rating + genre_primary + meta_critic_rating + thanksxmas + summer + 
                received_award)
+model_5 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
+             maturity_rating + genre_primary + meta_critic_rating + release_month)
+model_6 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
+             maturity_rating + genre_primary + meta_critic_rating + summer)
+# Testing for release year
+model_7 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
+             maturity_rating + genre_primary + meta_critic_rating + thanksxmas + release_year)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
@@ -110,45 +117,36 @@ se.model_2 = coeftest(model_2, vcov = vcovHC)[ , "Std. Error"]
 se.model_3 = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
 se.model_4 = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
 se.model_5 = coeftest(model_5, vcov = vcovHC)[ , "Std. Error"]
+se.model_6 = coeftest(model_6, vcov = vcovHC)[ , "Std. Error"]
+se.model_7 = coeftest(model_7, vcov = vcovHC)[ , "Std. Error"]
 
-model_a_table <- stargazer(model_1, model_2, model_3, model_4, model_5, type = "text",
+model_a_table <- stargazer(model_1, model_2, model_3, model_4, model_5, model_6, model_7, type = "text",
           header=FALSE, no.space=TRUE, column.sep.width = "3pt",
-          #se = list(se.model_1, se.model_2, se.model_3, se.model_4),
-          star.cutoffs = c(0.05, 0.01, 0.001), title = "Summary for models 1 to 5")
-```
-```{r release_month model compare to summer & thanksxmax}
-model_5 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             maturity_rating + genre_primary + meta_critic_rating + release_month)
-model_6 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             maturity_rating + genre_primary + meta_critic_rating + summer)
-
-anova(model_3, model_5, test = 'F')
-# P-value greater than 0.05, reject null hypothesis, model_5 with release_month
-# does not improve the performance of the model.
-anova(model_3, model_6, test = 'F')
+          star.cutoffs = c(0.05, 0.01, 0.001), title = "Summary for models 1 to 7")
 ```
 ```{r test models genre_primary, duration_minutes, maturity_rating, meta_critic_rating and release_month}
-model_test_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary)
-model_test_2 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes)
-model_test_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating)
-model_test_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating + meta_critic_rating)
-model_test_5 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating + meta_critic_rating + release_month)
-
-anova(model_test_1, model_test_2, test = 'F')
-anova(model_test_2, model_test_3, test = 'F')
-anova(model_test_3, model_test_4, test = 'F')
-anova(model_test_4, model_test_5, test = 'F')
+# model_test_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary)
+# model_test_2 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes)
+# model_test_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating)
+# model_test_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating + meta_critic_rating)
+# model_test_5 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary + duration_minutes + maturity_rating + meta_critic_rating + release_month)
+# 
+# anova(model_test_1, model_test_2, test = 'F')
+# anova(model_test_2, model_test_3, test = 'F')
+# anova(model_test_3, model_test_4, test = 'F')
+# anova(model_test_4, model_test_5, test = 'F')
 ```
-
 
 ```{r f-test for model_1, model_2 and model_3}
 #A F test was conducted. Assumptions of F test: 1) the population must be 
 # normally distributed and 2) the samples must be independent events. 
+print("F test - Model 1 & Model 2")
 anova(model_1, model_2, test = 'F')
 # The p-value is less than 0.05 thus we can reject the null hypothesis, the 
 # additional parameter duration_minutes, maturity_rating, and genre_primary that 
 # were estimated in `model_2` makes this second model more fully represent the 
 # true population.
+print("F test - Model 2 & Model 3")
 anova(model_2, model_3, test = 'F')
 # Between model_2 and model_3 the additional covariate meta_critic_rating 
 # and thanksxmas in model_3 have explanatory power and improves the fit 
@@ -160,10 +158,23 @@ anova(model_2, model_3, test = 'F')
 # with additional covariates have explanatory power (is able to explain
 # the variance in the dependent variable better than model 1 and 2) and are
 # improving the model performance.
+print("F test - Model 3 & Model 4")
 anova(model_3, model_4, test = 'F')
 # Failed to reject null hypothesis, p-value greater than 0.05. The binary
 # covariates in model_4, summer and received_award do not have additional 
 # explanatory power and does not improve the performance of the model.
+```
+```{r model comparison between release_month, summer, thanksxmax and release year}
+print("F test - Model 3 & Model 5")
+anova(model_3, model_5, test = 'F')
+# P-value greater than 0.05, reject null hypothesis, model_5 with release_month
+# does not improve the performance of the model.
+print("F test - Model 3 & Model 6")
+anova(model_3, model_6, test = 'F')
+print("F test - Model 3 & Model 7")
+anova(model_3, model_7, test = 'F')
+# Release year does not have additional explanatory power compared to model 3. 
+# Supporting evidence of not treating it as a time-series.
 ```
 ```{r print regression tables with robust standard errors}
 coeftest(model_1, vcovHC, type = "HC1")
