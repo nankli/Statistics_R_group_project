@@ -67,7 +67,7 @@ post_1990_raw_scatter
 post_1990_raw <- post_1990_merge[c('title','maturity_rating','duration_minutes',
                                    'clean_box_office_real','clean_budget_real',
                                    'genre_primary','rotten_tomatoes_rating',
-         'release_year','release_month','summer','thanksxmas','received_award')]
+         'release_year','release_month','summer','thanksxmas','received_award','meta_critic_rating')]
 post_1990 <- na.omit(post_1990_raw)
 
 summary(post_1990)
@@ -169,13 +169,13 @@ correlation matrix is applied here.
 
 ```{r EDA, correlation matrix}
 if (!require("GGally")) install.packages('GGally')
-post_1990 <- post_1990 %>% 
+post_1990_filtered <- post_1990_filtered %>% 
   mutate(
     box_office_log = log(clean_box_office_real), 
     budget_log = log(clean_budget_real)
   )
-post_1990 %>%
-  select(box_office_log, budget_log, duration_minutes,rotten_tomatoes_rating) %>%
+post_1990_filtered %>%
+  select(box_office_log, budget_log, duration_minutes,meta_critic_rating) %>%
   GGally::ggpairs()
 ```
 ```{r box office and binary variable (recieved_award and release_month) }
