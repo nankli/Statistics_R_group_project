@@ -19,6 +19,7 @@ library(readr)
 library(ggplot2)
 library(stargazer)
 library(lmtest)
+library(sandwich)
 #tinytex::install_tinytex()
 theme_set(theme_bw())
 
@@ -176,14 +177,29 @@ anova(model_3, model_7, test = 'F')
 # Release year does not have additional explanatory power compared to model 3. 
 # Supporting evidence of not treating it as a time-series.
 ```
-```{r print regression tables with robust standard errors}
-coeftest(model_1, vcovHC, type = "HC1")
+#Test CLM Assumptions
+```{r model diagnostic plots}
+plot(model_3, which=1)
+plot(model_3, which=2)
+plot(model_3, which=3)
+plot(model_3, which=4)
+plot(model_3, which=5)
+```
+```{r}
+print("Coefficients with Heteroskedasticity-robust Standard Errors")
 coeftest(model_3, vcovHC, type = "HC1")
 ```
-```{r r code and plots assessing normally distributed errors}
+```{r}
+print("Formal Test of Heteroskedasticity")
+bptest(model_3)
+```
+
+
+```{r assessing normally distributed errors}
 print("Formal Test of Residual Normality")
 set.seed(56423)
 shapiro.test(sample(model_3$residuals, size = 5000,replace=TRUE))
 # P-value < 0.05, indicates that we can reject the null hypothesis and that it 
 # is normally distributed.
+hist(model_3$residuals)
 ```
