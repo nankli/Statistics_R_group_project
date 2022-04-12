@@ -20,6 +20,7 @@ library(ggplot2)
 library(stargazer)
 library(lmtest)
 library(sandwich)
+library(car)
 #tinytex::install_tinytex()
 theme_set(theme_bw())
 
@@ -184,10 +185,16 @@ plot(model_3, which=3)
 plot(model_3, which=4)
 plot(model_3, which=5)
 ```
+```{r no perfect collinearity check}
+print("Computation of Variance Inflation Factor (VIF)")
+vif(model_3)
+# VIF < 2 
+```
 ```{r}
 print("Coefficients with Heteroskedasticity-robust Standard Errors")
 coeftest(model_3, vcovHC, type = "HC1")
 ```
+
 ```{r}
 print("Formal Test of Heteroskedasticity")
 bptest(model_3)
