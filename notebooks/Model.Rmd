@@ -35,7 +35,6 @@ data_path <- file.path(root_path,"src","data","raw")
 post_1990_merge <- read_parquet(file = file.path(data_path, "post_1990_clean_data"))
 ```
 
-
 ```{r, scatter plot}
 post_1990_raw_histogram <- post_1990_merge %>%
 filter(box_office != "" & budget != "") %>%
@@ -49,7 +48,7 @@ filter(box_office != "" & budget != "") %>%
 post_1990_raw_histogram
 ```
 
-###models
+###Models
 
 Model 1: Baseline model (only including one independent variable):
 
@@ -177,7 +176,7 @@ anova(model_3, model_7, test = 'F')
 # Release year does not have additional explanatory power compared to model 3. 
 # Supporting evidence of not treating it as a time-series.
 ```
-#Test CLM Assumptions
+###Test CLM Assumptions
 ```{r model diagnostic plots}
 plot(model_3, which=1)
 plot(model_3, which=2)
@@ -193,9 +192,7 @@ coeftest(model_3, vcovHC, type = "HC1")
 print("Formal Test of Heteroskedasticity")
 bptest(model_3)
 ```
-
-
-```{r assessing normally distributed errors}
+```{r}
 print("Formal Test of Residual Normality")
 set.seed(56423)
 shapiro.test(sample(model_3$residuals, size = 5000,replace=TRUE))
