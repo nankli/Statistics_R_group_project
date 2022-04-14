@@ -64,7 +64,7 @@ $$
 
 Model 3: Model including more independent variables of interest (meta_critic_rating and thankxmas):
 $$
-\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary} + \beta_5*\text{meta_critic_rating} + \beta_6*\text{thanksxmas}
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity_rating} + \beta_4*\text{genre_primary} + \beta_5*\text{meta_critic_rating}
 $$
 
 Model 4: Model including additional binary variables (summer and received_award):
@@ -97,8 +97,8 @@ model_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log)
 model_2 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
                maturity_rating + genre_primary)
 model_3 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             maturity_rating + genre_primary + meta_critic_rating + thanksxmas)
-#Additional binary variables (summer and received_award)
+             maturity_rating + genre_primary + meta_critic_rating)
+#Additional binary variables (thanksxmas, summer and received_award)
 model_4 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
              maturity_rating + genre_primary + meta_critic_rating + thanksxmas + summer + 
                received_award)
@@ -108,7 +108,7 @@ model_6 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_min
              maturity_rating + genre_primary + meta_critic_rating + summer)
 # Testing for release year
 model_7 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_minutes +
-             maturity_rating + genre_primary + meta_critic_rating + thanksxmas + release_year)
+             maturity_rating + genre_primary + meta_critic_rating + release_year)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
@@ -164,8 +164,8 @@ anova(model_1, model_2, test = 'F')
 # true population.
 print("F test - Model 2 & Model 3")
 anova(model_2, model_3, test = 'F')
-# Between model_2 and model_3 the additional covariate meta_critic_rating 
-# and thanksxmas in model_3 have explanatory power and improves the fit 
+# Between model_2 and model_3 the additional covariate meta_critic_rating in 
+# model_3 have explanatory power and improves the fit 
 # of the model. The null hypothesis is that model_2 model_3 have equal residual 
 # sum of squares. If the probability (p-value) of observing F-value that is at 
 # least as large as the F-value that the study got (5.615) is lower than 0.05, 
@@ -177,7 +177,7 @@ anova(model_2, model_3, test = 'F')
 print("F test - Model 3 & Model 4")
 anova(model_3, model_4, test = 'F')
 # Failed to reject null hypothesis, p-value greater than 0.05. The binary
-# covariates in model_4, summer and received_award do not have additional 
+# covariates in model_4, thanksxmas, summer and received_award do not have additional 
 # explanatory power and does not improve the performance of the model.
 ```
 ```{r model comparison between release_month, summer, thanksxmax and release year}
@@ -187,10 +187,12 @@ anova(model_3, model_5, test = 'F')
 # does not improve the performance of the model.
 print("F test - Model 3 & Model 6")
 anova(model_3, model_6, test = 'F')
+# P-value greater than 0.05, reject null hypothesis, model_6 with summer
+# does not improve the performance of the model.
 print("F test - Model 3 & Model 7")
 anova(model_3, model_7, test = 'F')
 # Release year does not have additional explanatory power compared to model 3. 
-# Supporting evidence of not treating it as a time-series.
+# Supporting evidence to justify not treating it as a time-series.
 ```
 ###Test CLM Assumptions
 ```{r model diagnostic plots}
