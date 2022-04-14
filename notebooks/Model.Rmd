@@ -113,17 +113,32 @@ model_7 = lm(data=post_1990_filtered, box_office_log ~ budget_log + duration_min
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA}
 
-se.model_1 = coeftest(model_1, vcov = vcovHC)[ , "Std. Error"]
-se.model_2 = coeftest(model_2, vcov = vcovHC)[ , "Std. Error"]
-se.model_3 = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
-se.model_4 = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
-se.model_5 = coeftest(model_5, vcov = vcovHC)[ , "Std. Error"]
-se.model_6 = coeftest(model_6, vcov = vcovHC)[ , "Std. Error"]
-se.model_7 = coeftest(model_7, vcov = vcovHC)[ , "Std. Error"]
-
+se.model_1 = coeftest(model_1, vcov = vcovHC, type = "HC1")
+se.model_2 = coeftest(model_2, vcov = vcovHC, type = "HC1")
+se.model_3 = coeftest(model_3, vcov = vcovHC, type = "HC1")
+se.model_4 = coeftest(model_4, vcov = vcovHC, type = "HC1")
+se.model_5 = coeftest(model_5, vcov = vcovHC, type = "HC1")
+se.model_6 = coeftest(model_6, vcov = vcovHC, type = "HC1")
+se.model_7 = coeftest(model_7, vcov = vcovHC, type = "HC1")
 model_a_table <- stargazer(model_1, model_2, model_3, model_4, model_5, model_6, model_7, type = "text",
           header=FALSE, no.space=TRUE, column.sep.width = "3pt",
-          star.cutoffs = c(0.05, 0.01, 0.001), title = "Summary for models 1 to 7")
+          se = list(se.model_1[,2],
+                   se.model_2[,2],
+                   se.model_3[,2],
+                   se.model_4[,2],
+                   se.model_5[,2],
+                   se.model_6[,2],
+                   se.model_7[,2]),
+          p = list(se.model_1[,4],
+                   se.model_2[,4],
+                   se.model_3[,4],
+                   se.model_4[,4],
+                   se.model_5[,4],
+                   se.model_6[,4],
+                   se.model_7[,4]),
+          report=('vc*p')
+)
+
 ```
 ```{r test models genre_primary, duration_minutes, maturity_rating, meta_critic_rating and release_month}
 # model_test_1 = lm(data=post_1990_filtered, box_office_log ~ budget_log + genre_primary)
