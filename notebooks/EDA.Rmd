@@ -81,26 +81,35 @@ unique(genre_primary)
 unique(release_month)
 ```
 ```{r}
-attach(post_1990,warn.conflicts = FALSE)
-mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=sum),c('Ratings','Box Office'))
-mrating
+mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=sum,na.rm = TRUE),c('Ratings','Box Office Sales'))
+
+data.frame(mrating[order(mrating$`Box Office Sales`,mrating$Ratings),])
 ```
 
 ```{r}
-attach(post_1990,warn.conflicts = FALSE)
+attach(post_1990_merge %>%
+filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=length),c('Ratings','Number of Movies'))
-mrating
+
+data.frame(mrating[order(mrating$`Number of Movies`,mrating$Ratings),])
 ```
 
 ```{r}
-attach(post_1990,warn.conflicts = FALSE)
+attach(post_1990_merge %>%
+filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 years<-setNames(aggregate(title, list(release_year), FUN=length),c('Year','Number of Movies'))
 years
+data.frame(years[order(years$Year,years$`Number of Movies`),])
 ```
 ```{r}
-attach(post_1990,warn.conflicts = FALSE)
+attach(post_1990_merge %>%
+filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 genre_rating<-setNames(aggregate(clean_box_office_real, list(genre_primary,maturity_rating), FUN=length),c('Genre','Rating','Number of Movies'))
 genre_rating
+genre_rating<-data.frame(genre_rating[order(genre_rating$`Number of Movies`,decreasing = TRUE),])
+
+genre_rating
+head(genre_rating)
 ```
 
 
