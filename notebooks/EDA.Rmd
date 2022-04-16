@@ -75,7 +75,8 @@ summary(post_1990)
 ```
 
 ```{r describe categorical data, echo=FALSE, message=TRUE, warning=TRUE}
-attach(post_1990,warn.conflicts = FALSE)
+attach(post_1990_merge %>%
+filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 unique(maturity_rating)
 unique(genre_primary)
 unique(release_month)
