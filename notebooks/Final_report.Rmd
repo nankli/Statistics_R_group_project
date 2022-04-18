@@ -79,14 +79,14 @@ box_plot_office <- post_1990_filtered  %>%
   aes(x = "", y = clean_box_office_real) + 
   geom_boxplot(fill = "#0c4c8a") + 
   theme_minimal() + 
-  labs(title = 'Boxplot of box office', y = 'Box office (Million $)')
+  labs(title = 'Boxplot of box office', y = 'Box office (Million $)') 
 
 box_plot_budget <- post_1990_filtered  %>%
   ggplot() + 
   aes(x = "", y = clean_budget_real) + 
   geom_boxplot(fill = "#0c4c8a") + 
   theme_minimal() + 
-  labs(title = 'Boxplot of budget', y = 'budget (Million $)')
+  labs(title = 'Boxplot of budget', y = 'budget (Million $)') 
 
 ```
 
@@ -100,12 +100,14 @@ box_office_hist <- post_1990_filtered %>%
   ggplot() + 
   aes(x=clean_box_office_real) + 
   geom_histogram(position ='dodge', bins=40) + 
-  labs(title = 'Distribution of box office', x = 'Box office (Million $)', y = 'Frequency')
+  labs(title = 'Box office', x = 'Box office (Million $)', y = 'Frequency') +
+  theme(text = element_text(size = 8))
 
 log_box_office_hist <- post_1990_filtered %>%
   ggplot() + aes(x=log(clean_box_office_real)) + 
   geom_histogram(position ='dodge', bins=30) + 
-  labs(title = 'Distribution of log(Box office)', x = 'log(Box office) (Million $)', y = 'Frequency')
+  labs(title = 'Log(Box office)', x = 'log(Box office) (Million $)', y = 'Frequency') +
+  theme(text = element_text(size = 8))
 
 ```
 
@@ -116,12 +118,14 @@ post_1990_filtered <- post_1990_filtered %>%
 budget_hist <- post_1990_filtered %>%
   ggplot() + aes(x=clean_budget_real) + 
   geom_histogram(position ='dodge', bins=30) + 
-  labs(title = 'Distribution of budget', x = 'Budget (Million $)', y = 'Frequency')
+  labs(title = 'Budget', x = 'Budget (Million $)', y = 'Frequency') +
+  theme(text = element_text(size = 8))
 
 log_budget_hist <- post_1990_filtered %>%
   ggplot() + aes(x=log(clean_budget_real)) + 
   geom_histogram(position ='dodge', bins=30) + 
-  labs(title = 'Distribution of log(Budget)', x = 'log(Budget) (Million $)', y = 'Frequency')
+  labs(title = 'Log(Budget)', x = 'log(Budget) (Million $)', y = 'Frequency') +
+  theme(text = element_text(size = 8))
 
 ```
 
@@ -346,17 +350,23 @@ The budget shows a strong positive correlation to box office and is statisticall
 
 **Second Model**\
 In the second model, we include additional independent variables of interest, duration, maturity rating, and primary genre:
-
+$$
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity rating} + \beta_4*\text{primary genre}
+$$
 The null hypothesis is that the first and second model have equal residual sum of squares. We conducted a F test between the first and second model, since the p-value is less than 0.05, we can reject the null hypothesis. The additional covariates included makes the second model more fully representative of the true population.
 
 **Third Model**\
 In the third model, we include independent variable Metacritic rating:
-
+$$
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity rating} + \beta_4*\text{primary genre} + \beta_5*\text{Metacritic rating}
+$$
 Based on the F test between the second and third model we observe that the covariate Metacritic rating has additional explanatory power (able to explain the variance in the dependent variable better than the first and second model) and is improving the model performance.
 
 **Fourth Model**\
 In the fourth model, we include binary variables thanksxmas, summer and award:
-
+$$
+\text{log(Box office)} = \beta_0 + \beta_1*\text{log(Budget)} + \beta_2*\text{duration} + \beta_3*\text{maturity rating} + \beta_4*\text{primary genre} + \beta_5*\text{Metacritic rating} + \beta_6*\text{thanksxmas} + \beta_7*\text{summer} + \beta_8*\text{award}
+$$
 From the results of the F test we failed to reject null hypothesis since the p-value is greater than 0.05. The three additional covariates in the fourth model do not have additional explanatory power and do not improve the performance of the model.
 
 
