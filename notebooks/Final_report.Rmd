@@ -9,6 +9,7 @@ output:
     number_sections: true
     toc_depth: 3
     extra_dependencies: ["float"]
+
 ---
 
 \newpage
@@ -34,6 +35,7 @@ theme_set(theme_bw())
 
 options(tinytex.verbose = TRUE)
 knitr::opts_chunk$set(echo=FALSE, message=FALSE)
+knitr::opts_chunk$set(fig.pos = "!H", out.extra = "")
 
 notebooks_path <- getwd()
 root_path <- dirname(notebooks_path)
@@ -242,7 +244,13 @@ set.seed(56423)
 shapiro.test(sample(model_3$residuals, size = 5000,replace=TRUE))
 # P-value < 0.05, indicates that we can reject the null hypothesis and that it 
 # is normally distributed.
-residual_hist <- hist(model_3$residuals)
+residual_df <- data.frame(model_3$residuals)
+residual_hist <- residual_df  %>%
+  ggplot() + 
+  geom_histogram() + 
+  aes(x = model_3.residuals) + 
+  theme_minimal() + 
+  labs(title = 'Model residuals', y = 'Count', x = "Residuals") 
 ```
 
 
@@ -325,7 +333,7 @@ Finally, to further standardize the budget and box office variable, we incorpora
 
 We began by exploring the distribution of numerical variables of interest. The figure below shows that the distributions of box office and budget are highly right-skewed and span multiple orders of magnitude. Therefore, we applied a log transformation to these two variables, which resulted in a more normal distribution. As a result, the original values between 0 and 1 million dollars were dropped after this transformation.
 
-```{r transform plots, fig.cap='Data Transformations', fig.pos='!b', fig.height = 2.5}
+```{r transforms, fig.cap='Data Transformations', fig.pos='!b', fig.height = 2.5}
 (box_office_hist | log_box_office_hist | budget_hist | log_budget_hist)
 ```
 
@@ -333,7 +341,7 @@ We removed the extreme outliers (box office >1990 Million \$ and budget > 350 Mi
 
 We applied a pairwise plot matrix shown in the figure below to quickly identify the visual relationship between these variables. Scatterplots of each pair of numeric variables are displayed on the left part of the plot. Pearson correlation coefficients are displayed on the right. Variable distribution is available on the diagonal. The scatter plots in the first column of this figure show the relationship between the log of box office and the other independent variables. There is an overall increasing trend at the box office, with increasing the budget,  duration, and Metacritic rating. Based on the correlation coefficients that are listed on the right part of this figure, we identify that box office and budget after the log transformation are highly correlated. The other variable pairs are either moderately correlated or slightly correlated. This exploration provided early signals that there is no perfect collinearity between the independent variables. 
 
-```{r correlation plots, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 4, warning=FALSE, message=FALSE}
+```{r correlation, fig.cap='Correlation plots', fig.pos='!b', fig.height = 3, warning=FALSE, message=FALSE}
 corr_matrix
 ```
 
@@ -421,25 +429,26 @@ As mentioned earlier, the movie dataset from the Google knowledge panel is web s
 
 **No Perfect Collinearity**\
 In our early stages of EDA, there were indications of no perfect collinearity between our independent variables of interest. To further support this claim we computed the variance inflation factor. The VIF values were less than 2 across our independent variables (the largest value was 1.4) and it did not suggest that redundancy is present between our predictor variables. 
-
+\newpage
 **Normally Distributed Errors**\
-We can assess the normality of the error distribution by utilizing Q-Q plot (theoretical quantities on the x-axis and residuals on the y-axis). The points in the Q-Q plot should form a relatively straight line, indicating that the quantiles of the dataset match what the quantiles of the dataset would theoretically be.The histogram of our residuals appears normal however the tails of the Q-Q plot suggests that the model is not fitted well for movies with very low or high budget. The Shapiro-Wilk test was used to further investigate the distribution of the residuals. With a p-value < 0.05 we can reject the null hypothesis and conclude that the errors are not normally distributed. However, the areas where the residuals are off appear to be largely around the tails of the distributions. This suggests that our model may not be suited for indie films and extremely large blockbusters, but everything else in between may be fine. 
+We can assess the normality of the error distribution by utilizing Q-Q plot (theoretical quantities on the x-axis and residuals on the y-axis). The points in the Q-Q plot should form a relatively straight line, indicating that the quantiles of the dataset match what the quantiles of the dataset would theoretically be.The histogram of our residuals, shown in the appendix, appears normal however the tails of the Q-Q plot suggests that the model is not fitted well for movies with very low or high budget. The Shapiro-Wilk test was used to further investigate the distribution of the residuals. With a p-value < 0.05 we can reject the null hypothesis and conclude that the errors are not normally distributed. However, the areas where the residuals are off appear to be largely around the tails of the distributions. This suggests that our model may not be suited for indie films and extremely large blockbusters, but everything else in between may be fine. 
 
-```{r normality, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 3, warning=FALSE, message=FALSE}
-#does not work
-#(qq_plot | residual_hist
+```{r normality, fig.cap='Residual QQ plot', fig.pos='!b', fig.height = 4, warning=FALSE, message=FALSE}
+#plot(model_3, which=2) | residual_hist
+plot(model_3, which=2)
+#residual_hist
 ```
-
+\newpage
 **Linear Conditional Expectation**\
 To assess the linear conditional expectation we can plot the predicted number of views on x-axis and model residuals on the y-axis. Look for residuals that are units above the predicted value at that point. The residuals appear to be linear across the range of x. Based on the residuals and fitted graph, it does not seem like there are any points where the residuals are significantly different from 0. The model satisfies the assumption of a linear conditional expectation.
 
-```{r LCE, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 3, warning=FALSE, message=FALSE}
-resid_plot
+```{r LCE, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 4, warning=FALSE, message=FALSE}
+#plot(model_3, which=1)
 ```
 
 # Model Results and Intrepretation
 
-```{r core model outputs}
+```{r core model outputs, echo = FALSE}
 core_model_table
 ```
 Across our model sets, we had a range of both statistically significant and statistically insignificant coefficients. 
@@ -490,12 +499,16 @@ Our analysis of the sub questions suggest that some industry norms may be correc
 
 Should we or other researchers return to this topic, there are a number of areas they could look into to improve upon this study. First, future researchers could partner directly with a studio to gain access to more detailed financial information. This would allow them to assess the impact of spending in specific areas. Next, they may also consider performing a true time series analysis. While we have manipulated the data in order to remove time varying factors, there may be important industry or macro trends that could be included with a time series analysis. Finally, researchers could look for ways to directly address a broader range of categorical variables like the impacts of specific talents, sequels, and whether basing a movie on pre-existing materials, like a successful novel.
 
+\newpage
 # Appendix
 
-```{r box and bar plots, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 3}
+```{r boxandbarplots, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 3}
 (box_plot_office | box_plot_budget)
 ```
-
-```{r sensitivity model outputs}
+```{r residualhistogramoutput, fig.cap='Residual Histogram', fig.pos='!b', fig.height = 3}
+residual_hist
+```
+\newpage
+```{r sensitivitymodeloutputs, fig.pos='!b'}
 sensitivity_model_table
 ```
