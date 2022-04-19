@@ -458,8 +458,7 @@ analysis. The genre variable combined each movie's primary and secondary
 genre into a single field. We split this field into two and relied on
 the primary genre. There were some genres that had small numbers of
 observations and were combined with like genres. For example, "Noir"
-films were combined with "Crime". Next both the budget and box office
-variables were included in a text field showing either dollars, millions
+films were combined with "Crime". We also processed the "Movie Release Date" to generate two binary variables: Summer and Thanksxmas, which are binary flags for whether the movie was released during summer months (May, June, July) or winter holiday months (November, December, January), respectively. Next both the budget and box office variables were included in a text field showing either dollars, millions
 of dollars, or billions of dollars. We cleaned these fields and
 standardized the values into millions of dollars.
 Finally, to further standardize the budget and box office variable, we
