@@ -3,14 +3,15 @@ title: "How does a movie’s budget affect its box office earnings?"
 author: "Heather Rodney, Kolby Devery, Nan Li, Matt Pitz, Ada Guan"
 date: "April 17, 2022"
 output:
-  html_document:
-    df_print: paged
-  word_document: default
   pdf_document: default
 subtitle: 'Datasci 203: Lab 2'
 editor_options:
   markdown:
     wrap: 72
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
+  \usepackage{longtable}
 ---
 
 
@@ -41,7 +42,8 @@ library(knitr)
 
 options(tinytex.verbose = FALSE)
 knitr::opts_chunk$set(echo=FALSE)
-knitr::opts_chunk$set(fig.pos = "!H", out.extra = "")
+#knitr::opts_chunk$set(fig.pos = "!H", out.extra = "")
+
 
 notebooks_path <- getwd()
 root_path <- dirname(notebooks_path)
@@ -198,39 +200,6 @@ se.model_4 = coeftest(model_4, vcov = vcovHC, type = "HC1")
 se.model_5 = coeftest(model_5, vcov = vcovHC, type = "HC1")
 se.model_6 = coeftest(model_6, vcov = vcovHC, type = "HC1")
 se.model_7 = coeftest(model_7, vcov = vcovHC, type = "HC1")
-
-core_model_table <- stargazer(model_1, model_2, model_3, model_4,
-          title = "Regression Results",
-          no.space=TRUE,
-          type = 'latex',
-          column.sep.width = "3pt",
-          se = list(se.model_1[,2],
-                   se.model_2[,2],
-                   se.model_3[,2],
-                   se.model_4[,2]),
-          p = list(se.model_1[,4],
-                   se.model_2[,4],
-                   se.model_3[,4],
-                   se.model_4[,4]),
-          digits = 3,
-          label="tab2",
-          table.placement = "H"
-)
-
-sensitivity_model_table <- stargazer(model_5, model_6, model_7,
-          title = "Sensitivity Regression Results",
-          type = "html", 
-          no.space=TRUE,
-          column.sep.width = "3pt",
-          se = list(se.model_5[,2],
-                   se.model_6[,2],
-                   se.model_7[,2]),
-          p = list(se.model_5[,4],
-                   se.model_6[,4],
-                   se.model_7[,4]),
-          digits = 3,
-          align = TRUE
-)
 ```
 
 ```{r model diagnostic plots, echo=FALSE, warning=FALSE, message=FALSE, comment=NA, results = 'hide', fig.show='hide'}
@@ -273,7 +242,10 @@ many individuals who fund movies, it would be helpful to know what
 factors increase and decrease the risks by ensuring the movie is
 successful and returns a sizable profit.
 
-An article by Carrillat et al (2018) performed an analysis on movies and
+An article by Carrillat et al (2018)\footnote{Carrillat, F.A., Legoux, R. \& 
+Hadida, A.L. Debates and assumptions about motion picture performance: a 
+meta-analysis. J. of the Acad. Mark. Sci. 46, 273–299 (2018), available at:
+https://doi.org/10.1007/s11747-017-0561-6} performed an analysis on movies and
 those that were successful. The results indicated that the actor and
 their recognition as demonstrated by awards and nominations contributed
 to the success of a movie. Additionally, movie critic reviews also
@@ -297,7 +269,7 @@ performed. The following information was inferred:
     scatter plot because they both have a small percentage of data in
     the dataset.
 
-```{r mat plot, fig.pos='!b', fig.height = 4}
+```{r mat plot, fig.height = 4}
 post_1990_maturity_scatter
 ```
 
@@ -307,7 +279,7 @@ post_1990_maturity_scatter
     lower budgets. For some outliers, romance and sci-fi movies had
     higher box office results.
 
-```{r genre plot, fig.pos='!b', fig.height = 4}
+```{r genre plot, fig.height = 4}
 post_1990_genre_scatter
 ```
 
@@ -371,34 +343,40 @@ Action and 77 were Horror.
 
 Below are additional tables that provide descriptive information on the data prior to the exploratory data analysis and data clean up.
 
-```{r,results='asis'}
+```{r,results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=sum,na.rm = TRUE),c('Ratings','Box Office Sales'))
 
 mrating_df<-data.frame(mrating[order(mrating$`Box Office Sales`,mrating$Ratings),],row.names = NULL)
-stargazer(mrating_df, title= "Box Office Sales per Rating (USD Millions)", type='html',
+stargazer(mrating_df, title= "Box Office Sales per Rating (USD Millions)", 
+          type = 'latex',
           add.lines = TRUE,no.space=TRUE,
           column.sep.width = "3pt",
           digits=2,summary=FALSE,
           notes = "Note: Box Office adjusted for Inflation",
-           table.placement = "H")
+          table.placement = "H",
+          header = FALSE
+          )
 ```
 
-```{r,results='asis'}
+```{r,results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=length),c('Ratings','Number of Movies'))
 
 mrating_df<-data.frame(mrating[order(mrating$`Number of Movies`,mrating$Ratings),],row.names = NULL)
-stargazer(mrating_df, title= "Number of Movies per Rating", type='html',
+stargazer(mrating_df, title= "Number of Movies per Rating",
+          type = 'latex',
           column.sep.width = "3pt",
           no.space=TRUE,
-        table.placement ="H",
-         summary=FALSE)
+          table.placement ="H",
+          summary=FALSE,
+          header = FALSE
+          )
 ```
 
-```{r,results='asis'}
+```{r,results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 genre_rating<-setNames(aggregate(clean_box_office_real, list(genre_primary,maturity_rating), FUN=length),c('Genre','Rating','Number of Movies'))
@@ -407,11 +385,15 @@ genre_rating<-data.frame(genre_rating[order(genre_rating$`Number of Movies`,decr
 
 genre_rating_top_5 <- genre_rating[1:10,]
 
-stargazer(genre_rating_top_5, title= "Number of Movies per Genre and Rating (Top 10)", type='html',
+stargazer(genre_rating_top_5, title= "Number of Movies per Genre and Rating (Top 10)", 
+          type='latex',
           no.space=TRUE,
+          table.placement ="H",
           column.sep.width = "3pt",
           rownames = NULL,
-          summary=FALSE)
+          summary=FALSE,
+          header = FALSE
+          )
 ```
 
 # Research Design
@@ -499,7 +481,7 @@ variables, which resulted in a more normal distribution. As a result,
 the original values between 0 and 1 million dollars were dropped after
 this transformation.
 
-```{r transforms, fig.cap='Data Transformations', fig.pos='!b', fig.height = 2.5}
+```{r transforms, fig.cap='Data Transformations', fig.height = 2.5}
 box_office_hist | log_box_office_hist | budget_hist | log_budget_hist
 ```
 
@@ -522,13 +504,11 @@ The other variable pairs are either moderately correlated or slightly
 correlated. This exploration provided early signals that there is no
 perfect collinearity between the independent variables.
 
-```{r correlation, fig.cap='Correlation plots', fig.pos='!b', fig.height = 3, warning=FALSE, message=FALSE}
+```{r correlation, fig.cap='Correlation plots', fig.height = 3, warning=FALSE, message=FALSE}
 corr_matrix
 ```
 
 # Modeling
-
-## Measurement Goals
 
 Our goal is to measure how the budget of a movie affects its box office
 earnings, while holding all other characteristics of the movie constant.
@@ -643,8 +623,6 @@ values were less than 2 across our independent variables (the largest
 value was 1.4) and it did not suggest that redundancy is present between
 our predictor variables. 
 
-\newpage 
-
 **Normally Distributed Errors**\
 We can assess the normality of the error distribution by utilizing Q-Q
 plot (theoretical quantities on the x-axis and residuals on the y-axis).
@@ -661,13 +639,11 @@ largely around the tails of the distributions. This suggests that our
 model may not be suited for indie films and extremely large
 blockbusters, but everything else in between may be fine.
 
-```{r normality, fig.cap='Residual QQ plot', fig.height=4, fig.pos='!b', message=FALSE, warning=FALSE}
+```{r normality, fig.cap='Residual QQ plot', fig.height=4, message=FALSE, warning=FALSE}
 #plot(model_3, which=2) | residual_hist
 plot(model_3, which=2)
 #residual_hist
 ```
-
-\newpage
 
 **Linear Conditional Expectation**\
 To assess the linear conditional expectation we can plot the predicted
@@ -678,17 +654,19 @@ residuals and fitted graph, it does not seem like there are any points
 where the residuals are significantly different from 0. The model
 satisfies the assumption of a linear conditional expectation.
 
-```{r LCE, eval=FALSE, fig.cap='Outlier box plots', fig.height=4, fig.pos='!b', message=FALSE, warning=FALSE, include=FALSE}
-#plot(model_3, which=1)
+```{r LCE, fig.cap='Residuals vs Fitted', fig.height=4, message=FALSE, warning=FALSE}
+plot(model_3, which=1)
 ```
 
 # Model Results and Intrepretation
 
-```{r core model outputs, echo=FALSE, results='asis'}
+```{r core model outputs, echo=FALSE, results='asis', echo=FALSE,message=FALSE, warning=FALSE}
 core_model_table <- stargazer(model_1, model_2, model_3, model_4,
           title = "Regression Results",
-          type = 'html',
-          column.sep.width = "3pt",
+          type = 'latex',
+          no.space=TRUE,
+          column.sep.width = "-15pt",
+          font.size = "small",
           se = list(se.model_1[,2],
                    se.model_2[,2],
                    se.model_3[,2],
@@ -697,10 +675,12 @@ core_model_table <- stargazer(model_1, model_2, model_3, model_4,
                    se.model_2[,4],
                    se.model_3[,4],
                    se.model_4[,4]),
-          digits = 3
+          digits = 3,
+          header = FALSE
 )
 
 ```
+
 
 Across our model sets, we had a range of both statistically significant
 and statistically insignificant coefficients.
@@ -762,7 +742,7 @@ assumption is supported by the lack of statistical significance that we
 have for models that include release month, year, or release window
 (summer/holiday).
 
-#Limitations of the Model
+# Limitations of the Model
 
 ## Data Issues
 
@@ -861,7 +841,7 @@ significant at the 90% or 95% level, this suggests at least some of the
 significance findings on the coefficients may be a type 1 error (reject
 the null that the beta is 0).
 
-#Conclusion
+# Conclusion
 
 Returning to the original research question, "how does a movie's budget
 affect its box office earnings ?", we find there to be a significant
@@ -884,7 +864,7 @@ successful movie on their hands, or even a mediocre one they are
 attempting to find a release timing for, they do not need to put as much
 weight on the release calendar.
 
-#Future considerations
+# Future considerations
 
 Should we or other researchers return to this topic, there are a number
 of areas they could look into to improve upon this study. First, future
@@ -903,28 +883,30 @@ like a successful novel.
 
 # Appendix
 
-```{r boxandbarplots, fig.cap='Outlier box plots', fig.pos='!b', fig.height = 3}
+```{r boxandbarplots, fig.cap='Outlier box plots', fig.height = 3}
 box_plot_office | box_plot_budget
 ```
 
-```{r residualhistogramoutput, fig.cap='Residual Histogram', fig.pos='!b', fig.height = 3}
+```{r residualhistogramoutput, fig.cap='Residual Histogram', fig.height = 3, echo=FALSE,message=FALSE, warning=FALSE}
 residual_hist
 ```
 
 \newpage
 
-```{r sensitivitymodeloutputs, fig.pos='!b',results='asis'}
+```{r sensitivitymodeloutputs, message = FALSE, warning = FALSE, results = 'asis'}
 sensitivity_model_table <- stargazer(model_5, model_6, model_7,
           title = "Sensitivity Regression Results",
-          type = "html", 
+          type = 'latex', 
           no.space=TRUE,
-          column.sep.width = "3pt",
+          column.sep.width = "-15pt",
+          font.size = "scriptsize",
           se = list(se.model_5[,2],
                    se.model_6[,2],
                    se.model_7[,2]),
           p = list(se.model_5[,4],
                    se.model_6[,4],
                    se.model_7[,4]),
-          digits = 3
+          digits = 3,
+          header = FALSE
 )
 ```
