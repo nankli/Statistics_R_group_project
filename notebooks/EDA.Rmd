@@ -17,6 +17,7 @@ library(moments)
 library(arrow)
 library(readr)
 library(ggplot2)
+library(stargazer)
 #tinytex::install_tinytex()
 theme_set(theme_bw())
 
@@ -80,37 +81,50 @@ filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 unique(maturity_rating)
 unique(genre_primary)
 unique(release_month)
+
+
 ```
 ```{r}
+attach(post_1990_merge %>%
+filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=sum,na.rm = TRUE),c('Ratings','Box Office Sales'))
 
-data.frame(mrating[order(mrating$`Box Office Sales`,mrating$Ratings),])
+mrating_df<-data.frame(mrating[order(mrating$`Box Office Sales`,mrating$Ratings),],row.names = NULL)
+stargazer(mrating_df, title= "Box Office Sales per Rating (USD Millions)", type='text',
+          add.lines = TRUE,no.space=TRUE,
+          column.sep.width = "3pt",
+          digits=2,summary=FALSE,
+          notes = "Note: Box Office adjusted for Inflation")
 ```
+
 
 ```{r}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 mrating<-setNames(aggregate(clean_box_office_real, list(maturity_rating), FUN=length),c('Ratings','Number of Movies'))
 
-data.frame(mrating[order(mrating$`Number of Movies`,mrating$Ratings),])
+mrating_df<-data.frame(mrating[order(mrating$`Number of Movies`,mrating$Ratings),],row.names = NULL)
+stargazer(mrating_df, title= "Number of Movies per Rating", type='text',
+          no.space=TRUE,
+         summary=FALSE)
 ```
 
-```{r}
-attach(post_1990_merge %>%
-filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
-years<-setNames(aggregate(title, list(release_year), FUN=length),c('Year','Number of Movies'))
-years
-data.frame(years[order(years$Year,years$`Number of Movies`),])
-```
+
 ```{r}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
 genre_rating<-setNames(aggregate(clean_box_office_real, list(genre_primary,maturity_rating), FUN=length),c('Genre','Rating','Number of Movies'))
 genre_rating
-genre_rating<-data.frame(genre_rating[order(genre_rating$`Number of Movies`,decreasing = TRUE),])
+genre_rating<-data.frame(genre_rating[order(genre_rating$`Number of Movies`,decreasing = TRUE),],row.names = NULL)
 
-genre_rating
-head(genre_rating)
+genre_rating_top_5 <- genre_rating[1:10,]
+
+stargazer(genre_rating_top_5, title= "Number of Movies per Movie and Rating", type='text',
+          no.space=TRUE,
+          column.sep.width = "3pt",
+          column.labels = c("Genre","Rating", "Movies"),
+          rownames = NULL,
+          summary=FALSE)
 ```
 
 
