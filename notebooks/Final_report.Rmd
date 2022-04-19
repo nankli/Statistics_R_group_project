@@ -360,6 +360,9 @@ stargazer(mrating_df, title= "Box Office Sales per Rating (USD Millions)",
           )
 ```
 
+This table provides the total amount of box office sales in millions for movies in the different maturity ratings. PG-13 movies had the most in box office sales compared to NC-17 that had the least.
+
+
 ```{r,results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 attach(post_1990_merge %>%
 filter(box_office != "" & budget != ""),warn.conflicts = FALSE)
@@ -375,6 +378,8 @@ stargazer(mrating_df, title= "Number of Movies per Rating",
           header = FALSE
           )
 ```
+
+This table provides the total number of movies that were created after 1990. Based on the information, most of the movies were PG-13, and NC-17 had the least amount of movies in the dataset. 
 
 ```{r,results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 attach(post_1990_merge %>%
@@ -395,6 +400,7 @@ stargazer(genre_rating_top_5, title= "Number of Movies per Genre and Rating (Top
           header = FALSE
           )
 ```
+The table provides the top 10 genre and rating with the most amount of movies. PG-13 and R are still part of the top 10 along with some of the most common types of movies such as Comedy and Action. 
 
 # Research Design
 
