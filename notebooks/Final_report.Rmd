@@ -329,7 +329,7 @@ primary movie category 3. Metacritic Rating: Movie critique of the movie
 prior to its release 4. Movie Release Date: The point in time during the
 year that the movie was released 5. Awards: Binary flag for whether the
 movie received awards 6. Maturity Rating: Movie content rating 7.
-Duration: The length of the movie in minutes
+Duration: The length of the movie in minutes.
 
 The categorical variables used were genre, maturity rating and movie
 release. The awards variable is a numerical variable, but transformed to
@@ -897,6 +897,8 @@ residual_hist
 sensitivity_model_table <- stargazer(model_5, model_6, model_7,
           title = "Sensitivity Regression Results",
           type = 'latex', 
+          model.numbers = FALSE,
+          column.labels = c("(5)", "(6)", "(7)"),
           no.space=TRUE,
           column.sep.width = "-15pt",
           font.size = "scriptsize",
