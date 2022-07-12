@@ -6,4 +6,6 @@ to produce a report that analyzes a specific research question.
 
 
 Title: How does a movie’s budget affect its box office earnings?
+
+
 Group members: Ada Guan, Kolby Devery, Nan Li, Heather Rodney, Matt Pitz
